@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 24 10% 6%;
+  --fg: 30 20% 96%;
+}
+
+:root:not(.dark) {
+  --bg: 30 20% 96%;
+  --fg: 24 10% 6%;
+}
+
+html {
+  color-scheme: dark;
+}
+
+html:not(.dark) {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-[hsl(var(--bg))] text-[hsl(var(--fg))] min-h-screen antialiased transition-colors duration-200;
+  background-image: radial-gradient(1000px 400px at 10% 10%, rgba(245, 158, 11, 0.12), transparent),
+    radial-gradient(800px 300px at 90% 20%, rgba(245, 158, 11, 0.08), transparent),
+    radial-gradient(1200px 600px at 50% 100%, rgba(120, 53, 15, 0.15), transparent);
+}
+
+html:not(.dark) body {
+  background-image: radial-gradient(1000px 400px at 10% 10%, rgba(245, 158, 11, 0.08), transparent),
+    radial-gradient(800px 300px at 90% 20%, rgba(245, 158, 11, 0.05), transparent),
+    radial-gradient(1200px 600px at 50% 100%, rgba(245, 158, 11, 0.06), transparent);
+}
+
+.dark select option {
+  color: #111;
+  background: #fff;
+}
+
+html:not(.dark) select option {
+  color: #111;
+  background: #fff;
+}
+
+.glass {
+  @apply bg-card/60 backdrop-blur-md border border-white/10 dark:border-white/10 border-amber-900/20 dark:shadow-glass transition-colors duration-200;
+}
+
+html:not(.dark) .glass {
+  @apply bg-white/60 border-amber-900/20;
+}
+
+.bento {
+  @apply rounded-xl glass;
+}
+
+.accent-gradient {
+  background: linear-gradient(135deg, #f59e0b 0%, #b45309 50%, #78350f 100%);
+}
+
+
