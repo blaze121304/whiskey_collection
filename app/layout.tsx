@@ -2,6 +2,13 @@ import '../styles/globals.css'
 import type { ReactNode } from 'react'
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import { ThemeProvider } from '@/components/theme-provider'
+import { Playfair_Display } from 'next/font/google'
+
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap',
+})
 
 export const metadata = {
   title: 'Whiskey Collection',
@@ -10,7 +17,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning className={playfairDisplay.variable}>
       <body>
         <ThemeProvider>
           <MotionConfig reducedMotion="user">

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
-import { Whiskey, WhiskeyCategory } from '@/lib/types'
+import { Whiskey, WhiskeyCategory, WhiskeySubCategory } from '@/lib/types'
 import { upsertWhiskey, getAllWhiskeys } from '@/lib/storage'
 
 const categories: WhiskeyCategory[] = ['Single Malt', 'Blended Malt', 'World Whiskey', 'Gin & Vodka', 'Wine & Liqueur', 'Sake & Traditional', 'Beer']
@@ -20,27 +20,100 @@ const categoryLabels: Record<WhiskeyCategory, string> = {
   'Beer': '맥주',
 }
 
-export function WhiskeyForm({ open, onOpenChange, onSaved }: { open: boolean; onOpenChange: (v: boolean) => void; onSaved: (list: Whiskey[]) => void }) {
+export function WhiskeyForm({ 
+  open, 
+  onOpenChange, 
+  onSaved,
+  editingItem 
+}: { 
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  onSaved: (list: Whiskey[]) => void
+  editingItem?: Whiskey | null
+}) {
   const [name, setName] = useState('')
   const [englishName, setEnglishName] = useState('')
   const [brand, setBrand] = useState('')
   const [category, setCategory] = useState<WhiskeyCategory | ''>('')
+  const [subCategories, setSubCategories] = useState<WhiskeySubCategory[]>([])
   const [notes, setNotes] = useState('')
   const [imageDataUrl, setImageDataUrl] = useState<string | undefined>(undefined)
+  const [isDragging, setIsDragging] = useState(false)
   const inputFileRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
-    if (!open) {
-      setName(''); setEnglishName(''); setBrand(''); setCategory(''); setNotes(''); setImageDataUrl(undefined)
+    if (open && editingItem) {
+      // 수정 모드: 기존 정보로 폼 채우기
+      setName(editingItem.name || '')
+      setEnglishName(editingItem.englishName || '')
+      setBrand(editingItem.brand || '')
+      setCategory(editingItem.category || '')
+      setNotes(editingItem.notes || '')
+      setImageDataUrl(editingItem.imageDataUrl)
+      // subCategories 또는 subCategory (하위 호환성)에서 가져오기
+      if (editingItem.subCategories && editingItem.subCategories.length > 0) {
+        setSubCategories([...editingItem.subCategories])
+      } else if (editingItem.subCategory) {
+        setSubCategories([editingItem.subCategory])
+      } else {
+        setSubCategories([])
+      }
+    } else if (!open) {
+      // 폼 닫을 때 초기화
+      setName('')
+      setEnglishName('')
+      setBrand('')
+      setCategory('')
+      setSubCategories([])
+      setNotes('')
+      setImageDataUrl(undefined)
     }
-  }, [open])
+  }, [open, editingItem])
 
-  const handleFile = async (file: File) => {
+  const handleFile = async (file: File): Promise<string> => {
+    // 파일 크기 제한 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('이미지 파일 크기는 5MB 이하여야 합니다.')
+    }
+    // 이미지 파일만 허용
+    if (!file.type.startsWith('image/')) {
+      throw new Error('이미지 파일만 업로드 가능합니다.')
+    }
     const reader = new FileReader()
-    return await new Promise<string>((resolve) => {
+    return await new Promise<string>((resolve, reject) => {
       reader.onload = () => resolve(String(reader.result))
+      reader.onerror = () => reject(new Error('파일 읽기 실패'))
       reader.readAsDataURL(file)
     })
+  }
+
+  const handleFileSelect = async (file: File | null) => {
+    if (!file) return
+    try {
+      const url = await handleFile(file)
+      setImageDataUrl(url)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.'
+      alert(message)
+      console.error(error)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    handleFileSelect(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
   }
 
   const onSubmit = () => {
@@ -53,12 +126,25 @@ export function WhiskeyForm({ open, onOpenChange, onSaved }: { open: boolean; on
       return
     }
     const now = Date.now()
-    const whiskey: Whiskey = {
+    const whiskey: Whiskey = editingItem ? {
+      // 수정 모드: 기존 정보 유지하고 변경된 정보만 업데이트
+      ...editingItem,
+      name,
+      englishName: englishName || undefined,
+      brand,
+      category: category as WhiskeyCategory,
+      subCategories: subCategories.length > 0 ? subCategories : undefined,
+      imageDataUrl,
+      notes,
+      updatedAt: now,
+    } : {
+      // 등록 모드: 새 위스키 생성
       id: String(now),
       name,
       englishName: englishName || undefined,
       brand,
       category: category as WhiskeyCategory,
+      subCategories: subCategories.length > 0 ? subCategories : undefined,
       purchaseDate: '',
       price: 0,
       imageDataUrl,
@@ -77,7 +163,7 @@ export function WhiskeyForm({ open, onOpenChange, onSaved }: { open: boolean; on
       <div className="absolute bottom-0 left-0 right-0 md:left-auto md:right-6 md:bottom-6 md:w-[520px]">
         <div className="bento p-5 md:p-6 md:rounded-2xl md:shadow-xl">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">등록</h3>
+            <h3 className="font-semibold">{editingItem ? '수정' : '등록'}</h3>
             <Button variant="ghost" onClick={() => onOpenChange(false)}>닫기</Button>
           </div>
           <div className="mt-4 grid grid-cols-1 gap-4">
@@ -96,7 +182,14 @@ export function WhiskeyForm({ open, onOpenChange, onSaved }: { open: boolean; on
               </div>
               <div>
                 <Label>종류 <span className="text-red-400">*</span></Label>
-                <Select value={category} onChange={(e) => setCategory(e.target.value as WhiskeyCategory | '')}>
+                <Select value={category} onChange={(e) => {
+                  setCategory(e.target.value as WhiskeyCategory | '')
+                  // 위스키 카테고리가 아니면 subCategories 초기화
+                  const cat = e.target.value as WhiskeyCategory | ''
+                  if (cat !== 'Single Malt' && cat !== 'Blended Malt' && cat !== 'World Whiskey') {
+                    setSubCategories([])
+                  }
+                }}>
                   <option value="">선택해주세요</option>
                   {categories.map((c) => (
                     <option key={c} value={c}>{categoryLabels[c]}</option>
@@ -104,24 +197,136 @@ export function WhiskeyForm({ open, onOpenChange, onSaved }: { open: boolean; on
                 </Select>
               </div>
             </div>
+            {/* 셰리/피트/버번 체크박스 - 위스키 카테고리일 때만 표시 */}
+            {(category === 'Single Malt' || category === 'Blended Malt' || category === 'World Whiskey') && (
+              <div>
+                <Label>특성 (선택)</Label>
+                <div className="mt-2 flex flex-wrap gap-4">
+                  {(['Sherry', 'Peat', 'Bourbon'] as WhiskeySubCategory[]).map((subCat) => (
+                    <label key={subCat} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={subCategories.includes(subCat)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSubCategories([...subCategories, subCat])
+                          } else {
+                            setSubCategories(subCategories.filter((sc) => sc !== subCat))
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-amber-900/20 dark:border-white/20 text-amber-600 focus:ring-amber-500 focus:ring-2"
+                      />
+                      <span className="text-sm text-foreground dark:text-foreground">
+                        {subCat === 'Sherry' ? '셰리' : subCat === 'Peat' ? '피트' : subCat === 'Bourbon' ? '버번' : subCat}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
               <Label>사진</Label>
-              <div className="flex items-center gap-3">
-                <Input ref={inputFileRef} type="file" accept="image/*" onChange={async (e) => {
-                  const f = e.target.files?.[0]
-                  if (!f) return
-                  const url = await handleFile(f)
-                  setImageDataUrl(url)
-                }} />
+              <div
+                className={`
+                  mt-2 border-2 border-dashed rounded-xl p-6 transition-colors
+                  ${isDragging 
+                    ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-900/20' 
+                    : 'border-amber-900/20 dark:border-white/10 hover:border-amber-600/50 dark:hover:border-amber-600/50'
+                  }
+                  ${imageDataUrl ? 'border-amber-600 dark:border-amber-600' : ''}
+                `}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+              >
+                <input
+                  ref={inputFileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    handleFileSelect(file)
+                  }}
+                />
+                {imageDataUrl ? (
+                  <div className="space-y-3">
+                    <div className="relative w-full rounded-lg overflow-hidden" style={{ aspectRatio: '3/4', maxHeight: '300px' }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img 
+                        src={imageDataUrl} 
+                        alt="preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setImageDataUrl(undefined)
+                          if (inputFileRef.current) {
+                            inputFileRef.current.value = ''
+                          }
+                        }}
+                      >
+                        이미지 제거
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => inputFileRef.current?.click()}
+                      >
+                        이미지 변경
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="text-center space-y-3 cursor-pointer"
+                    onClick={() => inputFileRef.current?.click()}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-amber-600 dark:text-amber-400"
+                      >
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                        <circle cx="9" cy="9" r="2"/>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                      </svg>
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-foreground dark:text-foreground">
+                          이미지를 드래그하거나 클릭하여 업로드
+                        </p>
+                        <p className="text-xs text-amber-900/60 dark:text-white/60">
+                          PNG, JPG, GIF (최대 5MB)
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        inputFileRef.current?.click()
+                      }}
+                    >
+                      파일 선택
+                    </Button>
+                  </div>
+                )}
               </div>
-              {imageDataUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={imageDataUrl} alt="preview" className="mt-3 w-full rounded-xl object-cover" style={{ aspectRatio: '3/2' }} />
-              )}
-            </div>
-            <div>
-              <Label>테이스팅 노트 (선택)</Label>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="노트, 향, 맛, 피니쉬 등" />
             </div>
             <div className="flex justify-end gap-2 mt-2">
               <Button variant="ghost" onClick={() => onOpenChange(false)}>취소</Button>

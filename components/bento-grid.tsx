@@ -1,9 +1,9 @@
 "use client"
 import Link from 'next/link'
-import Image from 'next/image'
 import { Whiskey } from '@/lib/types'
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
+import { useState } from 'react'
 
 export function BentoGrid({ items }: { items: Whiskey[] }) {
   if (items.length === 0) {
@@ -15,39 +15,110 @@ export function BentoGrid({ items }: { items: Whiskey[] }) {
   }
   return (
     <div className="[column-fill:_balance] columns-2 md:columns-3 lg:columns-5 gap-4 space-y-4">
-      {items.map((w) => (
-        <motion.div key={w.id} layoutId={`card-${w.id}`} className="break-inside-avoid">
-          <Link href={`/whiskey/${w.id}`}>
-            <Card className="p-0 overflow-hidden hover:scale-[1.01] transition-transform">
-              <div className="relative">
-                {w.imageDataUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={w.imageDataUrl}
-                    alt={w.name}
-                    className="w-full object-cover"
-                    style={{ aspectRatio: '3/4' }}
-                  />
-                ) : (
-                  <div className="w-full aspect-[3/4] bg-gradient-to-br from-amber-900/40 to-amber-700/20" />
-                )}
-                <div className="absolute top-2 left-2">
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border border-white/10 shadow-sm bg-white/70 text-amber-900 backdrop-blur-sm dark:bg-black/50 dark:text-amber-100">
-                    {w.category}
-                  </span>
+      {items.map((w) => {
+        const ImageComponent = ({ imageUrl }: { imageUrl: string }) => {
+          const [imageError, setImageError] = useState(false)
+          const isExternalUrl = imageUrl.startsWith('http://') || imageUrl.startsWith('https://')
+          
+          if (imageError) {
+            return <div className="w-full aspect-[3/4] bg-gradient-to-br from-amber-900/40 to-amber-700/20" />
+          }
+
+          return (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imageUrl}
+              alt={w.name}
+              className="w-full object-cover"
+              style={{ aspectRatio: '3/4' }}
+              onError={() => setImageError(true)}
+              {...(isExternalUrl && { crossOrigin: 'anonymous' })}
+            />
+          )
+        }
+
+        return (
+          <motion.div key={w.id} layoutId={`card-${w.id}`} className="break-inside-avoid group">
+            <Link href={`/whiskey/${w.id}`}>
+              <Card className="whiskey-card p-0 overflow-hidden rounded-xl relative">
+                <div className="relative">
+                  {w.imageDataUrl ? (
+                    <ImageComponent imageUrl={w.imageDataUrl} />
+                  ) : (
+                    <div className="w-full aspect-[3/4] bg-gradient-to-br from-amber-900/40 to-amber-700/20" />
+                  )}
+                  <div className="absolute top-2 left-2 z-10">
+                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border border-white/10 shadow-sm bg-white/70 text-amber-900 backdrop-blur-sm dark:bg-black/50 dark:text-amber-100">
+                      {w.category}
+                    </span>
+                  </div>
+                  {w.price > 0 && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <span className="whiskey-price inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold border border-amber-500/30 shadow-sm bg-amber-500/20 backdrop-blur-sm dark:bg-amber-600/30">
+                        ₩{w.price.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  {/* 호버 오버레이 */}
+                  <div className="card-overlay absolute inset-0 bg-black/70 dark:bg-black/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4">
+                    {w.personalNote && (
+                      <div className="tasting-notes text-white space-y-1.5 pt-12">
+                        <p className="text-xs leading-relaxed break-words">{w.personalNote}</p>
+                      </div>
+                    )}
+                    {!w.personalNote && (
+                      <div className="tasting-notes text-white/70 text-xs pt-12">
+                        My Story가 없습니다
+                      </div>
+                    )}
+                    <div className="quick-actions flex flex-col gap-2">
+                      <Link 
+                        href={`/whiskey/${w.id}`}
+                        className="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded-lg bg-amber-600/80 hover:bg-amber-600 text-white transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        상세 보기
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="p-4">
-                <div className="text-sm text-amber-900/70 dark:text-white/60 whitespace-normal break-words">{w.brand}</div>
-                <div className="mt-1 font-semibold text-foreground dark:text-foreground whitespace-normal break-words">{w.name}</div>
-                {w.englishName && (
-                  <div className="mt-0.5 text-xs text-amber-900/60 dark:text-white/50 whitespace-normal break-words">{w.englishName}</div>
-                )}
-              </div>
-            </Card>
-          </Link>
-        </motion.div>
-      ))}
+                <div className="p-4">
+                  {(w.subCategories && w.subCategories.length > 0) || w.subCategory ? (
+                    <div className="mb-2 flex flex-wrap gap-1">
+                      {(() => {
+                        const subCats = w.subCategories && w.subCategories.length > 0 
+                          ? w.subCategories 
+                          : (w.subCategory ? [w.subCategory] : [])
+                        return subCats.map((subCat, idx) => (
+                          <span
+                            key={idx}
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border border-white/10 shadow-sm backdrop-blur-sm ${
+                              subCat === 'Sherry'
+                                ? 'bg-[#800020]/70 text-white dark:bg-[#800020]/50'
+                                : subCat === 'Peat'
+                                ? 'bg-[#3D2817]/70 text-white dark:bg-[#3D2817]/50'
+                                :                               subCat === 'Bourbon'
+                                ? 'bg-[#FFD700]/70 text-amber-900 dark:bg-[#FFD700]/50 dark:text-amber-900'
+                                : ''
+                            }`}
+                          >
+                            {subCat === 'Sherry' ? '셰리' : subCat === 'Peat' ? '피트' : subCat === 'Bourbon' ? '버번' : subCat}
+                          </span>
+                        ))
+                      })()}
+                    </div>
+                  ) : null}
+                  <div className="whiskey-brand text-sm whitespace-normal break-words">{w.brand}</div>
+                  <div className="whiskey-name mt-1 text-foreground dark:text-foreground whitespace-normal break-words">{w.name}</div>
+                  {w.englishName && (
+                    <div className="mt-0.5 text-xs text-amber-900/60 dark:text-white/50 whitespace-normal break-words">{w.englishName}</div>
+                  )}
+                </div>
+              </Card>
+            </Link>
+          </motion.div>
+        )
+      })}
     </div>
   )
 }
