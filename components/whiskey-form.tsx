@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Whiskey, WhiskeyCategory, WhiskeySubCategory } from '@/lib/types'
-import { upsertWhiskey, getAllWhiskeys } from '@/lib/storage'
+import { upsertWhiskey } from '@/lib/storage'
 
 const categories: WhiskeyCategory[] = ['Single Malt', 'Blended Malt', 'World Whiskey', 'Gin & Vodka', 'Wine & Liqueur', 'Sake & Traditional', 'Beer']
 
@@ -38,9 +38,14 @@ export function WhiskeyForm({
   const [subCategories, setSubCategories] = useState<WhiskeySubCategory[]>([])
   const [abv, setAbv] = useState<string>('')
   const [volume, setVolume] = useState<string>('')
+  const [nation, setNation] = useState<string>('')
+  const [region, setRegion] = useState<string>('')
+  const [starPoint, setStarPoint] = useState<string>('')
   const [notes, setNotes] = useState('')
   const [imageDataUrl, setImageDataUrl] = useState<string | undefined>(undefined)
+  const [imageFile, setImageFile] = useState<File | undefined>(undefined)
   const [isDragging, setIsDragging] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const inputFileRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -54,6 +59,9 @@ export function WhiskeyForm({
       setImageDataUrl(editingItem.imageDataUrl)
       setAbv(editingItem.abv ? String(editingItem.abv) : '')
       setVolume(editingItem.volume ? String(editingItem.volume) : '')
+      setNation(editingItem.nation || '')
+      setRegion(editingItem.region || '')
+      setStarPoint(editingItem.starPoint ? String(editingItem.starPoint) : '')
       // subCategories 또는 subCategory (하위 호환성)에서 가져오기
       if (editingItem.subCategories && editingItem.subCategories.length > 0) {
         setSubCategories([...editingItem.subCategories])
@@ -71,33 +79,34 @@ export function WhiskeyForm({
       setSubCategories([])
       setAbv('')
       setVolume('')
+      setNation('')
+      setRegion('')
+      setStarPoint('')
       setNotes('')
       setImageDataUrl(undefined)
+      setImageFile(undefined)
     }
   }, [open, editingItem])
-
-  const handleFile = async (file: File): Promise<string> => {
-    // 파일 크기 제한 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error('이미지 파일 크기는 5MB 이하여야 합니다.')
-    }
-    // 이미지 파일만 허용
-    if (!file.type.startsWith('image/')) {
-      throw new Error('이미지 파일만 업로드 가능합니다.')
-    }
-    const reader = new FileReader()
-    return await new Promise<string>((resolve, reject) => {
-      reader.onload = () => resolve(String(reader.result))
-      reader.onerror = () => reject(new Error('파일 읽기 실패'))
-      reader.readAsDataURL(file)
-    })
-  }
 
   const handleFileSelect = async (file: File | null) => {
     if (!file) return
     try {
-      const url = await handleFile(file)
-      setImageDataUrl(url)
+      // 파일 크기 제한 (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('이미지 파일 크기는 5MB 이하여야 합니다.')
+      }
+      // 이미지 파일만 허용
+      if (!file.type.startsWith('image/')) {
+        throw new Error('이미지 파일만 업로드 가능합니다.')
+      }
+      // 파일 저장 (API 호출 시 사용)
+      setImageFile(file)
+      // 미리보기를 위한 DataURL 생성
+      const reader = new FileReader()
+      reader.onload = () => {
+        setImageDataUrl(String(reader.result))
+      }
+      reader.readAsDataURL(file)
     } catch (error) {
       const message = error instanceof Error ? error.message : '이미지 업로드에 실패했습니다.'
       alert(message)
@@ -122,7 +131,7 @@ export function WhiskeyForm({
     setIsDragging(false)
   }
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!name.trim()) {
       alert('위스키명을 입력해주세요.')
       return
@@ -131,40 +140,48 @@ export function WhiskeyForm({
       alert('종류를 선택해주세요.')
       return
     }
-    const now = Date.now()
-    const whiskey: Whiskey = editingItem ? {
-      // 수정 모드: 기존 정보 유지하고 변경된 정보만 업데이트
-      ...editingItem,
-      name,
-      englishName: englishName || undefined,
-      brand,
-      category: category as WhiskeyCategory,
-      subCategories: subCategories.length > 0 ? subCategories : undefined,
-      abv: abv ? parseFloat(abv) : undefined,
-      volume: volume ? parseFloat(volume) : undefined,
-      imageDataUrl,
-      notes,
-      updatedAt: now,
-    } : {
-      // 등록 모드: 새 위스키 생성
-      id: String(now),
-      name,
-      englishName: englishName || undefined,
-      brand,
-      category: category as WhiskeyCategory,
-      subCategories: subCategories.length > 0 ? subCategories : undefined,
-      abv: abv ? parseFloat(abv) : undefined,
-      volume: volume ? parseFloat(volume) : undefined,
-      purchaseDate: '',
-      price: 0,
-      imageDataUrl,
-      notes,
-      createdAt: now,
-      updatedAt: now,
+    
+    setIsSaving(true)
+    try {
+      const now = Date.now()
+      const whiskeyData: Partial<Whiskey> = {
+        name,
+        englishName: englishName || undefined,
+        brand,
+        category: category as WhiskeyCategory,
+        subCategories: subCategories.length > 0 ? subCategories : undefined,
+        abv: abv ? parseFloat(abv) : undefined,
+        volume: volume ? parseFloat(volume) : undefined,
+        nation: nation || undefined,
+        region: region || undefined,
+        starPoint: starPoint ? parseFloat(starPoint) : undefined,
+        notes: notes || undefined,
+      }
+
+      if (editingItem) {
+        // 수정 모드
+        whiskeyData.id = editingItem.id
+        whiskeyData.createdAt = editingItem.createdAt
+        whiskeyData.updatedAt = now
+        // 이미지가 변경되지 않았으면 기존 URL 유지
+        if (!imageFile && editingItem.imageDataUrl) {
+          whiskeyData.imageDataUrl = editingItem.imageDataUrl
+        }
+      } else {
+        // 등록 모드
+        whiskeyData.createdAt = now
+        whiskeyData.updatedAt = now
+      }
+
+      const list = await upsertWhiskey(whiskeyData as Whiskey, imageFile)
+      onSaved(list)
+      onOpenChange(false)
+    } catch (error) {
+      console.error('Failed to save whiskey:', error)
+      alert('위스키 저장에 실패했습니다.')
+    } finally {
+      setIsSaving(false)
     }
-    const list = upsertWhiskey(whiskey)
-    onSaved(list)
-    onOpenChange(false)
   }
 
   return (
@@ -228,6 +245,36 @@ export function WhiskeyForm({
                   placeholder="700" 
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>국가</Label>
+                <Input 
+                  value={nation} 
+                  onChange={(e) => setNation(e.target.value)} 
+                  placeholder="스코틀랜드" 
+                />
+              </div>
+              <div>
+                <Label>생산지역</Label>
+                <Input 
+                  value={region} 
+                  onChange={(e) => setRegion(e.target.value)} 
+                  placeholder="스페이사이드" 
+                />
+              </div>
+            </div>
+            <div>
+              <Label>별점</Label>
+              <Input 
+                type="number" 
+                step="0.1"
+                min="0"
+                max="5"
+                value={starPoint} 
+                onChange={(e) => setStarPoint(e.target.value)} 
+                placeholder="4.5" 
+              />
             </div>
             {/* 셰리/피트/버번 체크박스 - 위스키 카테고리일 때만 표시 */}
             {(category === 'Single Malt' || category === 'Blended Malt' || category === 'World Whiskey') && (
@@ -298,6 +345,7 @@ export function WhiskeyForm({
                         size="sm"
                         onClick={() => {
                           setImageDataUrl(undefined)
+                          setImageFile(undefined)
                           if (inputFileRef.current) {
                             inputFileRef.current.value = ''
                           }
@@ -361,8 +409,10 @@ export function WhiskeyForm({
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-2">
-              <Button variant="ghost" onClick={() => onOpenChange(false)}>취소</Button>
-              <Button onClick={onSubmit}>저장</Button>
+              <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isSaving}>취소</Button>
+              <Button onClick={onSubmit} disabled={isSaving}>
+                {isSaving ? '저장 중...' : '저장'}
+              </Button>
             </div>
           </div>
         </div>

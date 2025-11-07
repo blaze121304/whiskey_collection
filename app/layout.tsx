@@ -2,11 +2,24 @@ import '../styles/globals.css'
 import type { ReactNode } from 'react'
 import { AnimatePresence, MotionConfig } from 'framer-motion'
 import { ThemeProvider } from '@/components/theme-provider'
-import { Playfair_Display } from 'next/font/google'
+import { Playfair_Display, Cormorant_Garamond, Inter } from 'next/font/google'
 
 const playfairDisplay = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-playfair',
+  display: 'swap',
+})
+
+const cormorantGaramond = Cormorant_Garamond({
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-cormorant',
+  display: 'swap',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
   display: 'swap',
 })
 
@@ -17,7 +30,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko" suppressHydrationWarning className={playfairDisplay.variable}>
+    <html lang="ko" suppressHydrationWarning className={`${playfairDisplay.variable} ${cormorantGaramond.variable} ${inter.variable}`}>
       <body>
         <ThemeProvider>
           <MotionConfig reducedMotion="user">

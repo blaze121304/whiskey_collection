@@ -100,9 +100,9 @@ html:not(.dark) body {
       transparent 120px
     ),
     /* 기존 radial gradient */
-    radial-gradient(1000px 400px at 10% 10%, rgba(245, 158, 11, 0.08), transparent),
-    radial-gradient(800px 300px at 90% 20%, rgba(245, 158, 11, 0.05), transparent),
-    radial-gradient(1200px 600px at 50% 100%, rgba(245, 158, 11, 0.06), transparent);
+    radial-gradient(1000px 400px at 10% 10%, rgba(245, 158, 11, 0.12), transparent),
+    radial-gradient(800px 300px at 90% 20%, rgba(245, 158, 11, 0.08), transparent),
+    radial-gradient(1200px 600px at 50% 100%, rgba(120, 53, 15, 0.15), transparent);
 }
 
 .dark select option {
@@ -125,6 +125,14 @@ html:not(.dark) .glass {
 
 .bento {
   @apply rounded-xl glass;
+}
+
+.bento:hover {
+  @apply bg-card/80;
+}
+
+html:not(.dark) .bento {
+  @apply bg-white/60 border-amber-900/20;
 }
 
 .accent-gradient {
@@ -203,16 +211,37 @@ html:not(.dark) .whiskey-price {
   pointer-events: auto;
 }
 
-/* 필터 UI 개선 */
+/* 필터 UI 개선 - 바톤 톤 */
 .filter-selected {
-  background: #f59e0b !important;
-  color: #1c1917 !important;
+  background: rgba(200, 137, 62, 0.15) !important;
+  border-color: #C8893E !important;
+  color: #C8893E !important;
+  box-shadow: 
+    0 0 0 1px rgba(200, 137, 62, 0.3),
+    inset 0 0 8px rgba(200, 137, 62, 0.1) !important;
   font-weight: 600;
 }
 
 html:not(.dark) .filter-selected {
-  background: #d97706 !important;
-  color: #ffffff !important;
+  background: rgba(200, 137, 62, 0.2) !important;
+  border-color: #B87A2E !important;
+  color: #9A6A25 !important;
+  box-shadow: 
+    0 0 0 1px rgba(200, 137, 62, 0.4),
+    inset 0 0 8px rgba(200, 137, 62, 0.15) !important;
+}
+
+/* 카테고리 버튼 호버 효과 - 바톤 톤 */
+.bento button:hover:not(.filter-selected) {
+  background: rgba(200, 137, 62, 0.08) !important;
+  border-color: rgba(200, 137, 62, 0.3) !important;
+  color: rgba(200, 137, 62, 0.9) !important;
+}
+
+html:not(.dark) .bento button:hover:not(.filter-selected) {
+  background: rgba(200, 137, 62, 0.12) !important;
+  border-color: rgba(200, 137, 62, 0.4) !important;
+  color: rgba(120, 53, 15, 0.9) !important;
 }
 
 /* 가격 범위 슬라이더 스타일 */
@@ -359,6 +388,540 @@ html:not(.dark) .action-button:hover {
 
 .info-section:hover {
   transform: translateY(-3px);
+}
+
+/* 바톤 스타일 헤더 */
+.bar-seal-logo {
+  font-family: var(--font-cormorant), serif;
+  filter: url(#noise);
+}
+
+.bar-seal-text-outer {
+  font-family: var(--font-cormorant), serif;
+  font-variant: small-caps;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.bar-seal-text-main {
+  font-family: var(--font-playfair), serif;
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+}
+
+.bar-title-main {
+  font-family: var(--font-playfair), var(--font-cormorant), serif;
+  background: linear-gradient(135deg, #C8893E 0%, #D4A574 50%, #B87A2E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-variant: small-caps;
+  letter-spacing: 0.03em;
+  position: relative;
+}
+
+.bar-title-main::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.bar-subtitle {
+  font-family: var(--font-inter), sans-serif;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  font-weight: 300;
+}
+
+.bar-subtitle-ko {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+html:not(.dark) .bar-title-main {
+  background: linear-gradient(135deg, #B87A2E 0%, #C8893E 50%, #9A6A25 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+html:not(.dark) .bar-subtitle {
+  color: rgba(120, 53, 15, 0.7);
+}
+
+html:not(.dark) .bar-subtitle-ko {
+  color: rgba(120, 53, 15, 0.5);
+}
+
+.font-inter {
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* 헤더 유리 카드 효과 */
+.header-glass-bar {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+html:not(.dark) .header-glass-bar {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* 바톤 스타일 디지털 시계 카드 */
+.bar-time-display-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0.75rem;
+  min-width: 140px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(200, 137, 62, 0.2);
+  border-radius: 0.5rem;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+html:not(.dark) .bar-time-display-card {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(200, 137, 62, 0.3);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.digital-date-section {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(200, 137, 62, 0.2);
+}
+
+.digital-year {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: rgba(200, 137, 62, 0.7);
+  font-family: var(--font-inter), sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.digital-date {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #C8893E 0%, #D4A574 50%, #B87A2E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: var(--font-inter), sans-serif;
+  letter-spacing: 0.02em;
+}
+
+html:not(.dark) .digital-date {
+  background: linear-gradient(135deg, #B87A2E 0%, #C8893E 50%, #9A6A25 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.digital-weekday {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: rgba(200, 137, 62, 0.6);
+  font-family: var(--font-inter), sans-serif;
+  margin-left: auto;
+}
+
+html:not(.dark) .digital-weekday {
+  color: rgba(120, 53, 15, 0.6);
+}
+
+.digital-time-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.digital-time {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-family: 'Courier New', 'Monaco', monospace;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.digital-digit {
+  display: inline-block;
+  background: linear-gradient(135deg, #C8893E 0%, #D4A574 50%, #B87A2E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 0.875rem;
+  line-height: 1;
+  text-shadow: 0 0 4px rgba(200, 137, 62, 0.3);
+  filter: drop-shadow(0 1px 2px rgba(200, 137, 62, 0.2));
+}
+
+.digital-separator {
+  display: inline-block;
+  color: rgba(200, 137, 62, 0.6);
+  font-size: 0.875rem;
+  line-height: 1;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+html:not(.dark) .digital-digit {
+  background: linear-gradient(135deg, #B87A2E 0%, #C8893E 50%, #9A6A25 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 4px rgba(200, 137, 62, 0.2);
+}
+
+html:not(.dark) .digital-separator {
+  color: rgba(120, 53, 15, 0.6);
+}
+
+html:not(.dark) .digital-year {
+  color: rgba(120, 53, 15, 0.7);
+}
+
+/* 위스키 카드 텍스처 및 구리 호일 라인 */
+.whiskey-card {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.whiskey-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(200, 137, 62, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 구리 호일 라인 (카드 상단) */
+.copper-foil-line-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    #C8893E 20%,
+    #D4A574 50%,
+    #C8893E 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 6px rgba(200, 137, 62, 0.4);
+  opacity: 0.7;
+  z-index: 5;
+  transition: opacity 0.3s ease;
+}
+
+.whiskey-card:hover .copper-foil-line-card {
+  opacity: 1;
+  box-shadow: 0 0 10px rgba(200, 137, 62, 0.6);
+}
+
+/* 리넨 텍스처 (Single Malt, Blended Malt) */
+.whiskey-card-linen {
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(200, 137, 62, 0.02) 2px,
+      rgba(200, 137, 62, 0.02) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(200, 137, 62, 0.015) 2px,
+      rgba(200, 137, 62, 0.015) 4px
+    );
+  background-size: 100% 100%;
+}
+
+html:not(.dark) .whiskey-card-linen {
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(200, 137, 62, 0.04) 2px,
+      rgba(200, 137, 62, 0.04) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(200, 137, 62, 0.03) 2px,
+      rgba(200, 137, 62, 0.03) 4px
+    );
+}
+
+/* 펠트 텍스처 (World Whiskey) */
+.whiskey-card-felt {
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(200, 137, 62, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(200, 137, 62, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 50% 20%, rgba(200, 137, 62, 0.02) 0%, transparent 40%);
+  background-size: 100% 100%, 100% 100%, 100% 100%;
+}
+
+html:not(.dark) .whiskey-card-felt {
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(200, 137, 62, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(200, 137, 62, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 50% 20%, rgba(200, 137, 62, 0.04) 0%, transparent 40%);
+  background-size: 100% 100%, 100% 100%, 100% 100%;
+}
+
+/* 바톤 스타일 아이콘 버튼 */
+.bar-icon-button {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.bar-icon-button:hover {
+  background: rgba(200, 137, 62, 0.1);
+  border-color: rgba(200, 137, 62, 0.3);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 4px rgba(200, 137, 62, 0.2);
+}
+
+html:not(.dark) .bar-icon-button {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(200, 137, 62, 0.15);
+}
+
+html:not(.dark) .bar-icon-button:hover {
+  background: rgba(200, 137, 62, 0.15);
+  border-color: rgba(200, 137, 62, 0.4);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 2px 4px rgba(200, 137, 62, 0.15);
+}
+
+/* 바톤 스타일 드롭다운 메뉴 */
+.bar-menu-dropdown {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark) .bar-menu-dropdown {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(200, 137, 62, 0.2);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.bar-menu-item {
+  color: hsl(var(--fg));
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.bar-menu-item:hover {
+  background: rgba(200, 137, 62, 0.15);
+  color: #C8893E;
+}
+
+html:not(.dark) .bar-menu-item:hover {
+  background: rgba(200, 137, 62, 0.2);
+  color: #B87A2E;
+}
+
+/* 히어로 바 섹션 스타일 */
+.hero-bar-section {
+  position: relative;
+}
+
+.hero-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.hero-toast-card {
+  background: rgba(10, 10, 10, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(200, 137, 62, 0.25);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+html:not(.dark) .hero-toast-card {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(200, 137, 62, 0.3);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.hero-bar-title {
+  font-family: var(--font-playfair), var(--font-cormorant), serif;
+  background: linear-gradient(135deg, #F5D5A0 0%, #D4A574 50%, #C8893E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.02em;
+  font-variant: small-caps;
+}
+
+html:not(.dark) .hero-bar-title {
+  background: linear-gradient(135deg, #C8893E 0%, #B87A2E 50%, #9A6A25 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-bar-quote {
+  font-family: var(--font-inter), sans-serif;
+  color: rgba(245, 213, 160, 0.95);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+html:not(.dark) .hero-bar-quote {
+  color: rgba(120, 53, 15, 0.9);
+}
+
+
+/* 히어로 섹션 스타일 */
+.hero-section {
+  position: relative;
+  transition: background-position 0.1s ease-out;
+}
+
+/* 필름 그레인 효과 */
+.hero-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* 토스트 카드 */
+.toast-card {
+  background: rgba(10, 10, 10, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(200, 137, 62, 0.2);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+html:not(.dark) .toast-card {
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(200, 137, 62, 0.3);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hero-slogan {
+  font-family: var(--font-playfair), var(--font-cormorant), serif;
+  background: linear-gradient(135deg, #F5D5A0 0%, #D4A574 50%, #C8893E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+html:not(.dark) .hero-slogan {
+  background: linear-gradient(135deg, #C8893E 0%, #B87A2E 50%, #9A6A25 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-family: var(--font-inter), sans-serif;
+  font-variant: small-caps;
+  letter-spacing: 0.03em;
+}
+
+/* 히어로 칩 버튼 */
+.hero-chip-button {
+  background: rgba(200, 137, 62, 0.15);
+  border: 1px solid rgba(200, 137, 62, 0.3);
+  color: #F5D5A0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-family: var(--font-inter), sans-serif;
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+}
+
+.hero-chip-button:hover {
+  background: rgba(200, 137, 62, 0.25);
+  border-color: rgba(200, 137, 62, 0.5);
+  color: #FFE5B4;
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 8px rgba(200, 137, 62, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+html:not(.dark) .hero-chip-button {
+  background: rgba(200, 137, 62, 0.2);
+  border: 1px solid rgba(200, 137, 62, 0.4);
+  color: #B87A2E;
+}
+
+html:not(.dark) .hero-chip-button:hover {
+  background: rgba(200, 137, 62, 0.3);
+  border-color: rgba(200, 137, 62, 0.6);
+  color: #9A6A25;
+  box-shadow: 
+    0 4px 8px rgba(200, 137, 62, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 

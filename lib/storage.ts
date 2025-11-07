@@ -1,42 +1,60 @@
 "use client"
 import { Whiskey } from './types'
+import { whiskeyApi } from './api'
 
-const STORAGE_KEY = 'whiskey.collection.v1'
+// API 기반으로 변경된 storage 함수들
+// 기존 코드와의 호환성을 위해 함수 시그니처는 유지
 
-export function getAllWhiskeys(): Whiskey[] {
-  if (typeof window === 'undefined') return []
+export async function getAllWhiskeys(): Promise<Whiskey[]> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const list = JSON.parse(raw) as Whiskey[]
-    return Array.isArray(list) ? list : []
-  } catch {
+    return await whiskeyApi.getAll()
+  } catch (error) {
+    console.error('Failed to fetch whiskeys:', error)
     return []
   }
 }
 
+// 동기 함수는 더 이상 사용하지 않지만, 호환성을 위해 유지
 export function saveAllWhiskeys(list: Whiskey[]) {
-  if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+  // API 기반에서는 사용하지 않음 (각 항목별로 API 호출)
+  console.warn('saveAllWhiskeys is deprecated. Use API methods instead.')
 }
 
-export function upsertWhiskey(item: Whiskey): Whiskey[] {
-  const list = getAllWhiskeys()
-  const idx = list.findIndex((w) => w.id === item.id)
-  if (idx >= 0) list[idx] = item
-  else list.unshift(item)
-  saveAllWhiskeys(list)
-  return list
+export async function upsertWhiskey(item: Partial<Whiskey>, imageFile?: File): Promise<Whiskey[]> {
+  try {
+    if (item.id && item.id !== '') {
+      // 기존 항목 수정
+      await whiskeyApi.update(item.id, item, imageFile)
+    } else {
+      // 새 항목 생성
+      await whiskeyApi.create(item, imageFile)
+    }
+    // 업데이트된 목록 반환
+    return await getAllWhiskeys()
+  } catch (error) {
+    console.error('Failed to upsert whiskey:', error)
+    throw error
+  }
 }
 
-export function getWhiskeyById(id: string): Whiskey | undefined {
-  return getAllWhiskeys().find((w) => w.id === id)
+export async function getWhiskeyById(id: string): Promise<Whiskey | undefined> {
+  try {
+    return await whiskeyApi.getById(id)
+  } catch (error) {
+    console.error('Failed to fetch whiskey:', error)
+    return undefined
+  }
 }
 
-export function deleteWhiskey(id: string): Whiskey[] {
-  const next = getAllWhiskeys().filter((w) => w.id !== id)
-  saveAllWhiskeys(next)
-  return next
+export async function deleteWhiskey(id: string): Promise<Whiskey[]> {
+  try {
+    await whiskeyApi.delete(id)
+    // 삭제 후 목록 반환
+    return await getAllWhiskeys()
+  } catch (error) {
+    console.error('Failed to delete whiskey:', error)
+    throw error
+  }
 }
 
 

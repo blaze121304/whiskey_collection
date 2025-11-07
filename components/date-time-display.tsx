@@ -12,50 +12,35 @@ export function DateTimeDisplay() {
     return () => clearInterval(timer)
   }, [])
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'short'
-    })
-  }
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    })
-  }
+  const year = dateTime.getFullYear()
+  const month = dateTime.getMonth() + 1
+  const day = dateTime.getDate()
+  const weekday = dateTime.toLocaleDateString('ko-KR', { weekday: 'short' })
+  const hours = dateTime.getHours().toString().padStart(2, '0')
+  const minutes = dateTime.getMinutes().toString().padStart(2, '0')
+  const seconds = dateTime.getSeconds().toString().padStart(2, '0')
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/50 dark:bg-black/30 backdrop-blur-sm border border-white/20 dark:border-white/10">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="text-amber-600 dark:text-amber-400 flex-shrink-0"
-      >
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-      <div className="flex flex-col min-w-0">
-        <div className="text-xs font-medium text-foreground dark:text-foreground whitespace-nowrap">
-          {formatDate(dateTime)}
+    <div className="bar-time-display-card">
+      <div className="digital-date-section">
+        <div className="digital-year">{year}</div>
+        <div className="digital-date">
+          {month.toString().padStart(2, '0')}.{day.toString().padStart(2, '0')}
         </div>
-        <div className="text-xs text-amber-900/70 dark:text-amber-100/70 font-mono">
-          {formatTime(dateTime)}
+        <div className="digital-weekday">{weekday}</div>
+      </div>
+      <div className="digital-time-section">
+        <div className="digital-time">
+          <span className="digital-digit">{hours[0]}</span>
+          <span className="digital-digit">{hours[1]}</span>
+          <span className="digital-separator">:</span>
+          <span className="digital-digit">{minutes[0]}</span>
+          <span className="digital-digit">{minutes[1]}</span>
+          <span className="digital-separator">:</span>
+          <span className="digital-digit">{seconds[0]}</span>
+          <span className="digital-digit">{seconds[1]}</span>
         </div>
       </div>
     </div>
   )
 }
-

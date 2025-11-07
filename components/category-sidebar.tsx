@@ -70,11 +70,11 @@ export function CategorySidebar({
 
   return (
     <div className="bento p-4">
-      <div className="text-sm font-semibold mb-4 text-foreground dark:text-foreground">Category</div>
+      <div className="text-sm font-semibold mb-4 text-amber-900/90 dark:text-amber-200/90 uppercase tracking-wider">Category</div>
       
       {/* 위스키 그룹 */}
       <div className="mb-6">
-        <div className="text-xs font-medium mb-2 text-amber-900/70 dark:text-white/70">위스키</div>
+        <div className="text-xs font-semibold mb-2 text-amber-900/80 dark:text-amber-200/80 uppercase tracking-wider">위스키</div>
         <div className="space-y-2">
           {whiskeyCategories.map((cat) => {
             const isCurrentCategorySelected = cat.value !== 'whiskey-all' && cat.value === selected
@@ -99,7 +99,7 @@ export function CategorySidebar({
                 
                 {/* 위스키 상세 검색 - 위스키 카테고리 버튼 바로 아래에 표시 */}
                 {showSubCategories && (
-                  <div className="mt-2 ml-4 pl-4 border-l-2 border-amber-900/20 dark:border-white/20">
+                  <div className="mt-2 ml-4 pl-4 border-l-2 border-amber-900/30 dark:border-amber-700/40">
                     <div className="space-y-1.5">
                       {whiskeySubCategories.map((subCat) => (
                         <Button
@@ -130,7 +130,7 @@ export function CategorySidebar({
 
       {/* 스피릿/기타 그룹 */}
       <div>
-        <div className="text-xs font-medium mb-2 text-amber-900/70 dark:text-white/70">스피릿 / 기타</div>
+        <div className="text-xs font-semibold mb-2 text-amber-900/80 dark:text-amber-200/80 uppercase tracking-wider">스피릿 / 기타</div>
         <div className="space-y-2">
           {spiritCategories.map((cat) => (
             <Button

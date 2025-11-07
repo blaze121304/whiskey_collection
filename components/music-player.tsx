@@ -3,13 +3,14 @@
 // Spotify 재즈 플레이리스트 임베드
 // 재즈 플레이리스트 URI를 사용 (예: Classic Jazz, Smooth Jazz, Lo-Fi Jazz 등)
 // Spotify에서 원하는 재즈 플레이리스트를 찾아서 URI를 변경할 수 있습니다
-const SPOTIFY_PLAYLIST_ID = '37i9dQZF1DXbITWG1ZJKYt' // Jazz Classics
+const DEFAULT_PLAYLIST_ID = '37i9dQZF1DXbITWG1ZJKYt' // Jazz Classics
 
-export function MusicPlayer() {
+export function MusicPlayer({ playlistId = DEFAULT_PLAYLIST_ID }: { playlistId?: string }) {
   return (
     <div className="w-full rounded-lg overflow-hidden bg-white/50 dark:bg-black/30 backdrop-blur-sm border border-white/20 dark:border-white/10 relative">
       <iframe
-        src={`https://open.spotify.com/embed/playlist/${SPOTIFY_PLAYLIST_ID}?utm_source=generator&theme=0&t=0&utm_content=WzAfADyXdJk4hP5e%2F%2B&compact=true`}
+        key={playlistId}
+        src={`https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0&t=0&utm_content=WzAfADyXdJk4hP5e%2F%2B&compact=true`}
         width="100%"
         height="80"
         frameBorder="0"

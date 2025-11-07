@@ -6,13 +6,13 @@ import { BentoGrid } from '@/components/bento-grid'
 import { MusicPlayer } from '@/components/music-player'
 import { useEffect, useMemo, useState } from 'react'
 import { Whiskey, WhiskeySubCategory, WhiskeyCategory } from '@/lib/types'
-import { ensureSeeded } from '@/lib/seed'
 import { WhiskeyForm } from '@/components/whiskey-form'
 import { WhiskeySelectModal } from '@/components/whiskey-select-modal'
-import { deleteWhiskey } from '@/lib/storage'
+import { getAllWhiskeys, deleteWhiskey } from '@/lib/storage'
 
 export default function HomePage() {
   const [whiskeys, setWhiskeys] = useState<Whiskey[]>([])
+  const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState<'all' | WhiskeyCategory | 'whiskey-all' | 'spirit-all'>('all')
   const [subCategoryFilter, setSubCategoryFilter] = useState<'all' | 'Sherry' | 'Peat' | 'Bourbon' | undefined>(undefined)
   const [nameSearch, setNameSearch] = useState<string>('')
@@ -23,8 +23,21 @@ export default function HomePage() {
   const [editingWhiskey, setEditingWhiskey] = useState<Whiskey | null>(null)
 
   useEffect(() => {
-    setWhiskeys(ensureSeeded())
+    loadWhiskeys()
   }, [])
+
+  const loadWhiskeys = async () => {
+    try {
+      setLoading(true)
+      const data = await getAllWhiskeys()
+      setWhiskeys(data)
+    } catch (error) {
+      console.error('Failed to load whiskeys:', error)
+      alert('위스키 목록을 불러오는데 실패했습니다.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filtered = useMemo(() => {
     return whiskeys.filter((w) => {
@@ -98,7 +111,13 @@ export default function HomePage() {
           {/* 메인 컨텐츠 영역 */}
           <div className="flex-1 min-w-0">
             <div className="mb-6">
-              <BentoGrid items={filtered} />
+              {loading ? (
+                <div className="bento p-8 text-center text-amber-900/70 dark:text-white/70">
+                  로딩 중...
+                </div>
+              ) : (
+                <BentoGrid items={filtered} />
+              )}
             </div>
           </div>
         </div>
@@ -107,7 +126,10 @@ export default function HomePage() {
       <WhiskeyForm
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
-        onSaved={(list) => setWhiskeys(list)}
+        onSaved={async (list) => {
+          setWhiskeys(list)
+          await loadWhiskeys()
+        }}
       />
 
       <WhiskeySelectModal
@@ -124,10 +146,15 @@ export default function HomePage() {
         open={isDeleteModalOpen}
         onOpenChange={setIsDeleteModalOpen}
         whiskeys={whiskeys}
-        onSelect={(whiskey) => {
+        onSelect={async (whiskey) => {
           if (confirm(`정말로 "${whiskey.name}" 위스키를 삭제하시겠습니까?`)) {
-            const list = deleteWhiskey(whiskey.id)
-            setWhiskeys(list)
+            try {
+              await deleteWhiskey(whiskey.id)
+              await loadWhiskeys()
+            } catch (error) {
+              console.error('Failed to delete whiskey:', error)
+              alert('위스키 삭제에 실패했습니다.')
+            }
           }
         }}
       />
@@ -139,7 +166,10 @@ export default function HomePage() {
           if (!open) setEditingWhiskey(null)
         }}
         editingItem={editingWhiskey}
-        onSaved={(list) => setWhiskeys(list)}
+        onSaved={async (list) => {
+          setWhiskeys(list)
+          await loadWhiskeys()
+        }}
       />
 
       <footer className="container mx-auto px-4 py-6 mt-8">

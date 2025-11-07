@@ -37,10 +37,20 @@ export function BentoGrid({ items }: { items: Whiskey[] }) {
           )
         }
 
+        // 카테고리에 따른 텍스처 클래스 결정
+        const getTextureClass = (category: string) => {
+          if (category === 'Single Malt') return 'whiskey-card-linen'
+          if (category === 'World Whiskey') return 'whiskey-card-felt'
+          if (category === 'Blended Malt') return 'whiskey-card-linen'
+          return 'whiskey-card-default'
+        }
+
         return (
           <motion.div key={w.id} layoutId={`card-${w.id}`} className="break-inside-avoid group">
             <Link href={`/whiskey/${w.id}`}>
-              <Card className="whiskey-card p-0 overflow-hidden rounded-xl relative">
+              <Card className={`whiskey-card ${getTextureClass(w.category)} p-0 overflow-hidden rounded-xl relative`}>
+                {/* 구리 호일 라인 */}
+                <div className="copper-foil-line-card" />
                 <div className="relative">
                   {w.imageDataUrl ? (
                     <ImageComponent imageUrl={w.imageDataUrl} />

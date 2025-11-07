@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { getWhiskeyById, upsertWhiskey, deleteWhiskey } from '@/lib/storage'
+import { getWhiskeyById, upsertWhiskey } from '@/lib/storage'
 import { Whiskey } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -18,10 +18,22 @@ export default function WhiskeyDetailPage() {
   const [isEditMode, setIsEditMode] = useState(false)
 
   useEffect(() => {
-    const w = getWhiskeyById(params.id)
-    if (!w) router.replace('/')
-    else setItem(w)
+    loadWhiskey()
   }, [params.id, router])
+
+  const loadWhiskey = async () => {
+    try {
+      const w = await getWhiskeyById(params.id)
+      if (!w) {
+        router.replace('/')
+      } else {
+        setItem(w)
+      }
+    } catch (error) {
+      console.error('Failed to load whiskey:', error)
+      router.replace('/')
+    }
+  }
 
   if (!item) return null
 
@@ -86,13 +98,17 @@ export default function WhiskeyDetailPage() {
     return 'Unknown'
   }
 
-  const saveNotes = () => {
-    const next: Whiskey = { ...item, updatedAt: Date.now() }
-    upsertWhiskey(next)
-    setIsEditMode(false)
-    // 데이터 다시 로드
-    const updated = getWhiskeyById(params.id)
-    if (updated) setItem(updated)
+  const saveNotes = async () => {
+    try {
+      const next: Whiskey = { ...item, updatedAt: Date.now() }
+      await upsertWhiskey(next)
+      setIsEditMode(false)
+      // 데이터 다시 로드
+      await loadWhiskey()
+    } catch (error) {
+      console.error('Failed to save notes:', error)
+      alert('저장에 실패했습니다.')
+    }
   }
 
   const renderImage = () => {
@@ -212,13 +228,28 @@ export default function WhiskeyDetailPage() {
                   <div className="flex items-center justify-between gap-4 mb-2 h-[2.25rem]">
                     <h1 className="whiskey-name text-3xl font-bold text-foreground dark:text-foreground flex-1">{item.name}</h1>
                     {/* 별점 섹션 */}
-                    <div className="rating-section flex items-center gap-1 flex-shrink-0">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <span key={star} className="text-2xl text-amber-400 dark:text-amber-500">
-                          ★
-                        </span>
-                      ))}
-                    </div>
+                    {item.starPoint != null && (
+                      <div className="rating-section flex items-center gap-1 flex-shrink-0">
+                        {[1, 2, 3, 4, 5].map((star) => {
+                          const starValue = item.starPoint || 0
+                          // 정수 부분보다 작거나 같으면 채워진 별
+                          const isFullStar = star <= Math.floor(starValue)
+                          
+                          return (
+                            <span 
+                              key={star} 
+                              className={`text-2xl ${
+                                isFullStar 
+                                  ? 'text-amber-400 dark:text-amber-500' 
+                                  : 'text-amber-200 dark:text-amber-800'
+                              }`}
+                            >
+                              {isFullStar ? '★' : '☆'}
+                            </span>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                   <p className="subtitle text-sm text-amber-600 dark:text-amber-400 mb-4">
                     {item.englishName || item.brand} · {item.category}
@@ -226,41 +257,35 @@ export default function WhiskeyDetailPage() {
                 </div>
                 
                 <div className="details-grid grid grid-cols-2 gap-4 mb-6">
-                  <div className="detail-item bento p-4">
-                    <span className="label block text-xs text-amber-900/60 dark:text-white/60 mb-1">ABV</span>
-                    <span className="value text-lg font-semibold text-foreground dark:text-foreground">40%</span>
-                  </div>
-                  <div className="detail-item bento p-4">
-                    <span className="label block text-xs text-amber-900/60 dark:text-white/60 mb-1">Volume</span>
-                    <span className="value text-lg font-semibold text-foreground dark:text-foreground">700ml</span>
-                  </div>
+                  {item.abv && (
+                    <div className="detail-item bento p-4">
+                      <span className="label block text-xs text-amber-900/60 dark:text-white/60 mb-1">ABV</span>
+                      <span className="value text-lg font-semibold text-foreground dark:text-foreground">{item.abv}%</span>
+                    </div>
+                  )}
+                  {item.volume && (
+                    <div className="detail-item bento p-4">
+                      <span className="label block text-xs text-amber-900/60 dark:text-white/60 mb-1">Volume</span>
+                      <span className="value text-lg font-semibold text-foreground dark:text-foreground">{item.volume}ml</span>
+                    </div>
+                  )}
                   <div className="detail-item bento p-4">
                     <span className="label block text-xs text-amber-900/60 dark:text-white/60 mb-1">Region</span>
                     <span className="value text-lg font-semibold text-foreground dark:text-foreground">
-                      {getWhiskeyRegion(item)}
+                      {item.region || getWhiskeyRegion(item)}
                     </span>
                   </div>
                   <div className="detail-item bento p-4">
                     <span className="label block text-xs text-amber-900/60 dark:text-white/60 mb-1">Nation</span>
                     <span className="value text-lg font-semibold text-foreground dark:text-foreground">
-                      {item.category === 'Single Malt' || item.category === 'Blended Malt' ? 'Scotland' : 
+                      {item.nation || (item.category === 'Single Malt' || item.category === 'Blended Malt' ? 'Scotland' : 
                        item.category === 'World Whiskey' ? 'World' : 
                        item.category === 'Gin & Vodka' ? 'Various' :
                        item.category === 'Wine & Liqueur' ? 'Various' :
                        item.category === 'Sake & Traditional' ? 'Japan/Korea' :
-                       item.category === 'Beer' ? 'Various' : 'Unknown'}
+                       item.category === 'Beer' ? 'Various' : 'Unknown')}
                     </span>
                   </div>
-                  {item.price > 0 && (
-                    <>
-                      <div className="detail-item bento p-4">
-                        <span className="label block text-xs text-amber-900/60 dark:text-white/60 mb-1">Price</span>
-                        <span className="value text-lg font-semibold text-foreground dark:text-foreground">
-                          ₩{item.price.toLocaleString()}
-                        </span>
-                      </div>
-                    </>
-                  )}
                 </div>
                 
                 {/* 개인 소감 */}
@@ -500,11 +525,10 @@ export default function WhiskeyDetailPage() {
                   {isEditMode ? (
                     <>
                       <Button onClick={saveNotes} className="action-button w-full">저장</Button>
-                      <Button variant="outline" onClick={() => {
+                      <Button variant="outline" onClick={async () => {
                         setIsEditMode(false)
                         // 변경사항 취소 - 원본 데이터 다시 로드
-                        const original = getWhiskeyById(params.id)
-                        if (original) setItem(original)
+                        await loadWhiskey()
                       }} className="w-full">취소</Button>
                     </>
                   ) : (
@@ -519,9 +543,8 @@ export default function WhiskeyDetailPage() {
         open={isEditFormOpen}
         onOpenChange={setIsEditFormOpen}
         editingItem={item}
-        onSaved={(list) => {
-          const updated = getWhiskeyById(params.id)
-          if (updated) setItem(updated)
+        onSaved={async (list) => {
+          await loadWhiskey()
         }}
       />
         </motion.div>

@@ -13,8 +13,9 @@ export interface Whiskey {
   subCategory?: WhiskeySubCategory
   abv?: number // 알코올 도수 (Alcohol By Volume)
   volume?: number // 용량 (ml)
-  purchaseDate: string
-  price: number
+  nation?: string // 국가
+  region?: string // 생산지역
+  starPoint?: number // 별점
   imageDataUrl?: string
   notes?: string
   nose?: string
