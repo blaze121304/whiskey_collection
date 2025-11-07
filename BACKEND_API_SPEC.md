@@ -30,8 +30,9 @@ public class Whiskey {
     private Double abv;                     // 알코올 도수 (Alcohol By Volume, %)
     private Double volume;                  // 용량 (ml)
     
-    private String purchaseDate;            // 구매일 (String 형식)
-    private Double price;                   // 가격
+    private String nation;                    // 국가
+    private String region;                  // 생산지역
+    private Double starPoint;               // 별점
     
     private String imageDataUrl;             // 이미지 URL (Base64 또는 파일 저장소 경로)
     private String notes;                   // 테이스팅 노트
@@ -104,8 +105,9 @@ Response:
       "subCategories": ["SHERRY"],
       "abv": 40.0,
       "volume": 700.0,
-      "purchaseDate": "2024-01-15",
-      "price": 120000.0,
+      "nation": "스코틀랜드",
+      "region": "스페이사이드",
+      "starPoint": 4.5,
       "imageDataUrl": "/images/whiskey/1.jpg",
       "notes": "부드러운 오크 향",
       "nose": "달콤한 바닐라와 오크",
@@ -144,8 +146,9 @@ Response:
   "subCategories": ["SHERRY"],
   "abv": 40.0,
   "volume": 700.0,
-  "purchaseDate": "2024-01-15",
-  "price": 120000.0,
+  "nation": "스코틀랜드",
+  "region": "스페이사이드",
+  "starPoint": 4.5,
   "imageDataUrl": "/images/whiskey/1.jpg",
   "notes": "부드러운 오크 향",
   "nose": "달콤한 바닐라와 오크",
@@ -177,8 +180,9 @@ Request Body:
   - subCategories: List<WhiskeySubCategory> (optional) - 특성 (셰리, 피트, 버번)
   - abv: Double (optional) - 알코올 도수 (%)
   - volume: Double (optional) - 용량 (ml)
-  - purchaseDate: String (optional) - 구매일
-  - price: Double (optional) - 가격
+  - nation: String (optional) - 국가
+  - region: String (optional) - 생산지역
+  - starPoint: Double (optional) - 별점
   - notes: String (optional) - 테이스팅 노트
   - nose: String (optional) - 노즈
   - palate: String (optional) - 팔레트
@@ -266,37 +270,6 @@ Query Parameters:
 Response: (목록 조회와 동일)
 ```
 
-### 4. 통계 API (선택사항)
-
-#### 4.1 카테고리별 통계
-```
-GET /api/whiskeys/statistics/category
-
-Response:
-{
-  "SINGLE_MALT": 12,
-  "BLENDED_MALT": 8,
-  "WORLD_WHISKEY": 10,
-  ...
-}
-```
-
-#### 4.2 전체 통계
-```
-GET /api/whiskeys/statistics/summary
-
-Response:
-{
-  "totalCount": 30,
-  "totalValue": 3600000,
-  "averagePrice": 120000,
-  "categoryCount": {
-    "SINGLE_MALT": 12,
-    ...
-  }
-}
-```
-
 ## 예외 처리
 
 ### Error Response 형식
@@ -377,8 +350,9 @@ public class WhiskeyRequestDto {
     private Double abv;              // 알코올 도수 (%)
     private Double volume;           // 용량 (ml)
     
-    private String purchaseDate;     // 구매일
-    private Double price;            // 가격
+    private String nation;           // 국가
+    private String region;          // 생산지역
+    private Double starPoint;        // 별점
     
     private String imageDataUrl;     // 이미지 URL (Base64 또는 파일 경로)
     private String notes;            // 테이스팅 노트
@@ -412,8 +386,9 @@ public class WhiskeyResponseDto {
     private List<WhiskeySubCategory> subCategories;
     private Double abv;
     private Double volume;
-    private String purchaseDate;
-    private Double price;
+    private String nation;
+    private String region;
+    private Double starPoint;
     private String imageDataUrl;
     private String notes;
     private String nose;
