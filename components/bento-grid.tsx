@@ -113,6 +113,31 @@ export function BentoGrid({ items }: { items: Whiskey[] }) {
                   {w.englishName && (
                     <div className="mt-0.5 text-xs text-amber-900/60 dark:text-white/50 whitespace-normal break-words">{w.englishName}</div>
                   )}
+                  {(w.abv != null || w.volume != null) && (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-amber-900/70 dark:text-white/60">
+                      {w.abv != null && (
+                        <span className="inline-flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                          </svg>
+                          {w.abv}%
+                        </span>
+                      )}
+                      {w.abv != null && w.volume != null && (
+                        <span className="text-amber-900/40 dark:text-white/40">·</span>
+                      )}
+                      {w.volume != null && (
+                        <span className="inline-flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 2h12v20H6z"/>
+                            <path d="M6 8h12"/>
+                          </svg>
+                          {w.volume}ml
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </Card>
             </Link>

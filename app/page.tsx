@@ -10,7 +10,6 @@ import { ensureSeeded } from '@/lib/seed'
 import { WhiskeyForm } from '@/components/whiskey-form'
 import { WhiskeySelectModal } from '@/components/whiskey-select-modal'
 import { deleteWhiskey } from '@/lib/storage'
-import { CollectionStats } from '@/components/collection-stats'
 
 export default function HomePage() {
   const [whiskeys, setWhiskeys] = useState<Whiskey[]>([])
@@ -81,9 +80,6 @@ export default function HomePage() {
         onNameSearchChange={setNameSearch} 
       />
       <div className="container mx-auto px-4 pt-4 pb-6">
-        {/* 컬렉션 통계 */}
-        <CollectionStats whiskeys={whiskeys} />
-        
         <div className="flex flex-col md:flex-row gap-6">
           {/* 왼쪽 사이드바 - 종류 필터 */}
           <aside className="w-full md:w-48 flex-shrink-0">

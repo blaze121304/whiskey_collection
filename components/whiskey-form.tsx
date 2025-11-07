@@ -36,6 +36,8 @@ export function WhiskeyForm({
   const [brand, setBrand] = useState('')
   const [category, setCategory] = useState<WhiskeyCategory | ''>('')
   const [subCategories, setSubCategories] = useState<WhiskeySubCategory[]>([])
+  const [abv, setAbv] = useState<string>('')
+  const [volume, setVolume] = useState<string>('')
   const [notes, setNotes] = useState('')
   const [imageDataUrl, setImageDataUrl] = useState<string | undefined>(undefined)
   const [isDragging, setIsDragging] = useState(false)
@@ -50,6 +52,8 @@ export function WhiskeyForm({
       setCategory(editingItem.category || '')
       setNotes(editingItem.notes || '')
       setImageDataUrl(editingItem.imageDataUrl)
+      setAbv(editingItem.abv ? String(editingItem.abv) : '')
+      setVolume(editingItem.volume ? String(editingItem.volume) : '')
       // subCategories 또는 subCategory (하위 호환성)에서 가져오기
       if (editingItem.subCategories && editingItem.subCategories.length > 0) {
         setSubCategories([...editingItem.subCategories])
@@ -65,6 +69,8 @@ export function WhiskeyForm({
       setBrand('')
       setCategory('')
       setSubCategories([])
+      setAbv('')
+      setVolume('')
       setNotes('')
       setImageDataUrl(undefined)
     }
@@ -134,6 +140,8 @@ export function WhiskeyForm({
       brand,
       category: category as WhiskeyCategory,
       subCategories: subCategories.length > 0 ? subCategories : undefined,
+      abv: abv ? parseFloat(abv) : undefined,
+      volume: volume ? parseFloat(volume) : undefined,
       imageDataUrl,
       notes,
       updatedAt: now,
@@ -145,6 +153,8 @@ export function WhiskeyForm({
       brand,
       category: category as WhiskeyCategory,
       subCategories: subCategories.length > 0 ? subCategories : undefined,
+      abv: abv ? parseFloat(abv) : undefined,
+      volume: volume ? parseFloat(volume) : undefined,
       purchaseDate: '',
       price: 0,
       imageDataUrl,
@@ -195,6 +205,28 @@ export function WhiskeyForm({
                     <option key={c} value={c}>{categoryLabels[c]}</option>
                   ))}
                 </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>ABV (%)</Label>
+                <Input 
+                  type="number" 
+                  step="0.1"
+                  value={abv} 
+                  onChange={(e) => setAbv(e.target.value)} 
+                  placeholder="40.0" 
+                />
+              </div>
+              <div>
+                <Label>용량 (ml)</Label>
+                <Input 
+                  type="number" 
+                  step="1"
+                  value={volume} 
+                  onChange={(e) => setVolume(e.target.value)} 
+                  placeholder="700" 
+                />
               </div>
             </div>
             {/* 셰리/피트/버번 체크박스 - 위스키 카테고리일 때만 표시 */}

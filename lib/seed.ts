@@ -19,9 +19,11 @@ export function ensureSeeded(): Whiskey[] {
   const cleaned = cleanInvalidImageUrls(normalized.list)
   // 기존 데이터에 subCategory 추가
   const withSubCategory = addSubCategories(cleaned.list)
-  if (normalized.changed || cleaned.changed || withSubCategory.changed) {
-    saveAllWhiskeys(withSubCategory.list)
-    return withSubCategory.list
+  // 기존 데이터에 abv와 volume 기본값 추가
+  const withDefaults = addDefaultAbvAndVolume(withSubCategory.list)
+  if (normalized.changed || cleaned.changed || withSubCategory.changed || withDefaults.changed) {
+    saveAllWhiskeys(withDefaults.list)
+    return withDefaults.list
   }
   return existing
 }
@@ -88,6 +90,31 @@ function cleanInvalidImageUrls(list: Whiskey[]): { changed: boolean; list: Whisk
   return { changed, list: next }
 }
 
+function addDefaultAbvAndVolume(list: Whiskey[]): { changed: boolean; list: Whiskey[] } {
+  let changed = false
+  const next = list.map((w) => {
+    const updates: Partial<Whiskey> = {}
+    let itemChanged = false
+    // abv가 없으면 기본값 40 추가
+    if (w.abv == null) {
+      updates.abv = 40
+      itemChanged = true
+      changed = true
+    }
+    // volume이 없으면 기본값 700 추가
+    if (w.volume == null) {
+      updates.volume = 700
+      itemChanged = true
+      changed = true
+    }
+    if (itemChanged) {
+      return { ...w, ...updates, updatedAt: Date.now() }
+    }
+    return w
+  })
+  return { changed, list: next }
+}
+
 export function generateSeedData(): Whiskey[] {
   const now = Date.now()
   const items: Array<{ name: string; englishName: string; brand: string; category: WhiskeyCategory; subCategory?: WhiskeySubCategory; url: string }> = [
@@ -134,6 +161,8 @@ export function generateSeedData(): Whiskey[] {
     brand: base.brand,
     category: base.category,
     subCategory: base.subCategory,
+    abv: 40, // 기본값
+    volume: 700, // 기본값
     purchaseDate: '',
     price: 0,
     imageDataUrl: undefined, // 이미지는 사용자가 직접 업로드하도록 설정

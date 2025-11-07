@@ -20,17 +20,39 @@ public class Whiskey {
     @Enumerated(EnumType.STRING)
     private WhiskeyCategory category;      // 종류 (필수)
     
-    private LocalDate purchaseDate;         // 구매일
-    private Long price;                     // 가격
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private List<WhiskeySubCategory> subCategories;  // 특성 (셰리, 피트, 버번) - 위스키 카테고리일 때만
     
-    private String imageUrl;                 // 이미지 URL (파일 저장소 경로)
-    private String notes;                    // 테이스팅 노트
+    @Enumerated(EnumType.STRING)
+    private WhiskeySubCategory subCategory;  // 하위 호환성 (deprecated)
+    
+    private Double abv;                     // 알코올 도수 (Alcohol By Volume, %)
+    private Double volume;                  // 용량 (ml)
+    
+    private String purchaseDate;            // 구매일 (String 형식)
+    private Double price;                   // 가격
+    
+    private String imageDataUrl;             // 이미지 URL (Base64 또는 파일 저장소 경로)
+    private String notes;                   // 테이스팅 노트
+    
+    private String nose;                    // 노즈
+    private String palate;                 // 팔레트
+    private String finish;                 // 피니시
+    
+    private String personalNote;            // 개인 소감
+    
+    @ElementCollection
+    private List<Pairing> pairings;         // 페어링 추천
+    
+    @ElementCollection
+    private List<String> flavorTags;        // 테이스팅 프로파일 태그
     
     @CreatedDate
-    private LocalDateTime createdAt;
+    private Long createdAt;                 // 생성일시 (timestamp)
     
     @LastModifiedDate
-    private LocalDateTime updatedAt;
+    private Long updatedAt;                 // 수정일시 (timestamp)
 }
 
 public enum WhiskeyCategory {
@@ -41,6 +63,18 @@ public enum WhiskeyCategory {
     WINE_LIQUEUR,          // Wine & Liqueur
     SAKE_TRADITIONAL,      // Sake & Traditional
     BEER                   // Beer
+}
+
+public enum WhiskeySubCategory {
+    SHERRY,                // 셰리
+    PEAT,                  // 피트
+    BOURBON                // 버번
+}
+
+@Embeddable
+public class Pairing {
+    private String icon;                   // 아이콘
+    private String name;                   // 이름
 }
 ```
 
@@ -67,12 +101,26 @@ Response:
       "englishName": "The Glenlivet 12",
       "brand": "Glenlivet",
       "category": "SINGLE_MALT",
+      "subCategories": ["SHERRY"],
+      "abv": 40.0,
+      "volume": 700.0,
       "purchaseDate": "2024-01-15",
-      "price": 120000,
-      "imageUrl": "/images/whiskey/1.jpg",
+      "price": 120000.0,
+      "imageDataUrl": "/images/whiskey/1.jpg",
       "notes": "부드러운 오크 향",
-      "createdAt": "2024-01-15T10:30:00",
-      "updatedAt": "2024-01-15T10:30:00"
+      "nose": "달콤한 바닐라와 오크",
+      "palate": "부드럽고 풍부한 맛",
+      "finish": "긴 여운",
+      "personalNote": "개인 소감",
+      "pairings": [
+        {
+          "icon": "🍫",
+          "name": "다크 초콜릿"
+        }
+      ],
+      "flavorTags": ["달콤함", "오크"],
+      "createdAt": 1705285800000,
+      "updatedAt": 1705285800000
     }
   ],
   "totalElements": 30,
@@ -93,12 +141,26 @@ Response:
   "englishName": "The Glenlivet 12",
   "brand": "Glenlivet",
   "category": "SINGLE_MALT",
+  "subCategories": ["SHERRY"],
+  "abv": 40.0,
+  "volume": 700.0,
   "purchaseDate": "2024-01-15",
-  "price": 120000,
-  "imageUrl": "/images/whiskey/1.jpg",
+  "price": 120000.0,
+  "imageDataUrl": "/images/whiskey/1.jpg",
   "notes": "부드러운 오크 향",
-  "createdAt": "2024-01-15T10:30:00",
-  "updatedAt": "2024-01-15T10:30:00"
+  "nose": "달콤한 바닐라와 오크",
+  "palate": "부드럽고 풍부한 맛",
+  "finish": "긴 여운",
+  "personalNote": "개인 소감",
+  "pairings": [
+    {
+      "icon": "🍫",
+      "name": "다크 초콜릿"
+    }
+  ],
+  "flavorTags": ["달콤함", "오크"],
+  "createdAt": 1705285800000,
+  "updatedAt": 1705285800000
 }
 ```
 
@@ -112,9 +174,18 @@ Request Body:
   - englishName: String (optional)
   - brand: String (required)
   - category: WhiskeyCategory (required)
-  - purchaseDate: String (optional, format: yyyy-MM-dd)
-  - price: Long (optional)
-  - notes: String (optional)
+  - subCategories: List<WhiskeySubCategory> (optional) - 특성 (셰리, 피트, 버번)
+  - abv: Double (optional) - 알코올 도수 (%)
+  - volume: Double (optional) - 용량 (ml)
+  - purchaseDate: String (optional) - 구매일
+  - price: Double (optional) - 가격
+  - notes: String (optional) - 테이스팅 노트
+  - nose: String (optional) - 노즈
+  - palate: String (optional) - 팔레트
+  - finish: String (optional) - 피니시
+  - personalNote: String (optional) - 개인 소감
+  - pairings: List<PairingDto> (optional) - 페어링
+  - flavorTags: List<String> (optional) - 테이스팅 프로파일 태그
   - image: File (optional) - 이미지 파일
 
 Response:
@@ -159,7 +230,7 @@ Request Body:
 
 Response:
 {
-  "imageUrl": "/images/whiskey/1.jpg"
+  "imageDataUrl": "/images/whiskey/1.jpg"
 }
 ```
 
@@ -301,9 +372,31 @@ public class WhiskeyRequestDto {
     @NotNull(message = "종류는 필수입니다.")
     private WhiskeyCategory category;
     
-    private LocalDate purchaseDate;
-    private Long price;
-    private String notes;
+    private List<WhiskeySubCategory> subCategories;  // 특성 (셰리, 피트, 버번)
+    
+    private Double abv;              // 알코올 도수 (%)
+    private Double volume;           // 용량 (ml)
+    
+    private String purchaseDate;     // 구매일
+    private Double price;            // 가격
+    
+    private String imageDataUrl;     // 이미지 URL (Base64 또는 파일 경로)
+    private String notes;            // 테이스팅 노트
+    
+    private String nose;             // 노즈
+    private String palate;          // 팔레트
+    private String finish;          // 피니시
+    
+    private String personalNote;     // 개인 소감
+    
+    private List<PairingDto> pairings;  // 페어링
+    private List<String> flavorTags;     // 테이스팅 프로파일 태그
+}
+
+@Data
+public class PairingDto {
+    private String icon;
+    private String name;
 }
 ```
 
@@ -316,12 +409,21 @@ public class WhiskeyResponseDto {
     private String englishName;
     private String brand;
     private WhiskeyCategory category;
-    private LocalDate purchaseDate;
-    private Long price;
-    private String imageUrl;
+    private List<WhiskeySubCategory> subCategories;
+    private Double abv;
+    private Double volume;
+    private String purchaseDate;
+    private Double price;
+    private String imageDataUrl;
     private String notes;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String nose;
+    private String palate;
+    private String finish;
+    private String personalNote;
+    private List<PairingDto> pairings;
+    private List<String> flavorTags;
+    private Long createdAt;
+    private Long updatedAt;
 }
 ```
 

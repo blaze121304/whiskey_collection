@@ -11,6 +11,8 @@ export interface Whiskey {
   subCategories?: WhiskeySubCategory[] // 위스키 카테고리(싱글몰트, 블렌디드 몰트, 월드위스키)의 경우: 셰리, 피트, 버번 (여러 개 선택 가능)
   // 하위 호환성을 위해 subCategory도 유지 (deprecated)
   subCategory?: WhiskeySubCategory
+  abv?: number // 알코올 도수 (Alcohol By Volume)
+  volume?: number // 용량 (ml)
   purchaseDate: string
   price: number
   imageDataUrl?: string
