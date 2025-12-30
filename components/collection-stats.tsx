@@ -36,7 +36,7 @@ export function CollectionStats({ whiskeys }: { whiskeys: Whiskey[] }) {
           <p className="value text-2xl font-bold text-foreground dark:text-foreground mb-1">{stats.total} 병</p>
           {stats.addedThisMonth > 0 && (
             <p className="trend text-xs text-amber-600 dark:text-amber-400">+{stats.addedThisMonth} this month</p>
-          )}
+          )}W
         </div>
         <div className="stat-card bento p-4">
           <h3 className="text-xs font-medium text-amber-900/70 dark:text-white/70 mb-2">Collection Value</h3>
